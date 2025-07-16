@@ -1,0 +1,9 @@
+langchain
+wikipedia
+langchain-openai
+langchain-community
+langchain-anthropic
+python-dotenv
+pydantic
+psycopg[binary]
+pip install rag
