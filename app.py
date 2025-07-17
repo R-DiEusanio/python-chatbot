@@ -7,6 +7,11 @@ from langchain_postgres.vectorstores import PGVector
 from sqlalchemy import create_engine
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
+from pptx import Presentation
+from pptx.util import Inches
+import wikipedia
+from flask import send_file
+import io
 import os
 
 # http://127.0.0.1:5000
@@ -52,19 +57,29 @@ def ask():
 
     if not context.strip():
         # Fallback chatbot generico se nessun documento trovato
-        response = llm.invoke(f"Domanda utente: {query}\nRispondi in modo cortese, breve e professionale in italiano.")
+        response = llm.invoke(f"Domanda utente: {query}\n Rispondi in modo cortese, breve e professionale in italiano.")
         answer = response.content
     else:
         # Prompt con RAG
         prompt = ChatPromptTemplate.from_messages([
             ("system",
-             """Sei un assistente altamente capace, riflessivo e preciso. 
-             Il tuo obiettivo è comprendere a fondo le intenzioni dell'utente, 
-             porre domande di chiarimento se necessario, 
-             pensare passo dopo passo a problemi complessi, 
-             fornire risposte chiare e accurate e anticipare proattivamente informazioni utili di follow-up. 
-             Dai sempre la priorità all'essere veritiero, sfumato, perspicace ed efficiente, 
-             adattando le tue risposte specificamente alle esigenze e alle preferenze dell'utente.   
+             """Sei un assistente educativo progettato per supportare professori e studenti delle scuole italiane. 
+I tuoi compiti principali sono:
+
+- Rispondere a domande su materie scolastiche come italiano, matematica, storia, geografia, scienze, latino, greco, filosofia, inglese.
+- Aiutare i professori nella preparazione di lezioni e materiali didattici, fornendo suggerimenti chiari e accurati.
+- Assistere gli studenti nello svolgimento dei compiti scolastici spiegando i concetti in modo semplice.
+- Offrire proposte per attività didattiche innovative e coinvolgenti.
+
+Il tuo stile è:
+- Educato, rispettoso e chiaro.
+- Adeguato all’ambiente scolastico.
+- Adatto sia a professori che a studenti (anche bambini e adolescenti).
+
+Rispondi sempre in lingua italiana.
+
+Evita di fornire consigli medici, legali o personali e invita gli utenti a rivolgersi a un adulto o a un esperto quando necessario.
+
 {context}
 """),  MessagesPlaceholder(variable_name="history"),
             ("human", "{query}")

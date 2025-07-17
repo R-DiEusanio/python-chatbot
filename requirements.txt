@@ -7,3 +7,4 @@ python-dotenv
 pydantic
 psycopg[binary]
 pip install rag
+pip install python-pptx
