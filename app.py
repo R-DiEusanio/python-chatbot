@@ -31,7 +31,7 @@ retriever = vector_store.as_retriever()
 
 chat_history = []
 
-# 🔹 Wikipedia API wrapper ottimizzato
+# Wikipedia API wrapper ottimizzato
 api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=300)
 wikipedia_search = WikipediaQueryRun(api_wrapper=api_wrapper)
 

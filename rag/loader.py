@@ -25,7 +25,7 @@ def ingest_pdf(pdf_path, collection_name="my_collection"):
         documents = loader.load()
         docs = text_splitter.split_documents(documents)
         all_docs.extend(docs)
-        print(f"✅ Ingestione completata per '{path}': {len(docs)} chunks")
+        print(f"Ingestione completata per '{path}': {len(docs)} chunks")
     
     embeddings = OpenAIEmbeddings()
     
