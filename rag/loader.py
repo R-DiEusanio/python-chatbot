@@ -43,8 +43,9 @@ def ingest_pdf(pdf_path, collection_name="my_collection"):
 
 if __name__ == "__main__":
     ingest_pdf([
-        "data/ww2.pdf",
-        "data/cultura-latina.pdf",
-        "data/grammatica-latina.pdf",
-        "data/valutazione-versioni.pdf"        
+        "data/DATA_SECURITY.pdf",
+        "data/OWASP.pdf",
+        "data/Security.pdf",
+        "data/OWASP_Testing_Guide.pdf",
+        "data/OWASP_Application_Security.pdf"
     ])
