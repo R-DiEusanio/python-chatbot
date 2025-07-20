@@ -43,7 +43,6 @@
     </div>
   </main>
 
-  <!-- Modal fullscreen -->
   <div class="modal fade" id="fullScreenModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
       <div class="modal-content">
@@ -59,7 +58,6 @@
   </div>
 
   <script>
-    let userInstruction = "";
     let lastDiagramData = null;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -116,32 +114,49 @@
       diagramData.nodes = diagramData.nodes.map(n => ({ ...n, key: isNaN(n.key) ? n.key : Number(n.key) }));
       diagramData.links = diagramData.links.map(l => ({ ...l, from: isNaN(l.from) ? l.from : Number(l.from), to: isNaN(l.to) ? l.to : Number(l.to) }));
 
-      // layout diagramma
       const $ = go.GraphObject.make;
       const diagram = $(go.Diagram, divId, {
         initialContentAlignment: go.Spot.Center,
         "undoManager.isEnabled": true,
-        layout: $(go.ForceDirectedLayout, {
-          defaultSpringLength: 50,
-          defaultElectricalCharge: 500,
-          maxIterations: 200
-
+        layout: $(go.LayeredDigraphLayout, {
+          direction: 90, // Layout verticale dall'alto verso il basso
+          layerSpacing: 70,
+          columnSpacing: 50,
+          layeringOption: go.LayeredDigraphLayout.LayerLongestPathSource
         })
       });
 
       diagram.nodeTemplate = $(go.Node, "Auto",
-        { isShadowed: true, shadowBlur: 6, shadowColor: "#888" },
-        $(go.Shape, "RoundedRectangle", new go.Binding("fill", "color"), { stroke: "#6A994E", strokeWidth: 2 }),
-        $(go.Panel, "Vertical", { margin: 8 },
-          $(go.TextBlock, { font: "bold 12pt sans-serif", textAlign: "center" }, new go.Binding("text", "text")),
-          $(go.TextBlock, { font: "10pt sans-serif", stroke: "#333", textAlign: "center", wrap: go.TextBlock.WrapFit, width: 150 }, new go.Binding("text", "description"))
-        )
-      );
+  { isShadowed: true, shadowBlur: 10, shadowColor: "rgba(0, 0, 0, 0.2)" },
+  $(go.Shape, "RoundedRectangle", {
+    stroke: "#6c757d",
+    strokeWidth: 2,
+    parameter1: 10
+  },
+  new go.Binding("fill", "color")
+),
+  $(go.Panel, "Vertical", { margin: 8 },
+    $(go.TextBlock, { font: "bold 12pt sans-serif", textAlign: "center", margin: 4 }, new go.Binding("text", "text")),
+    $(go.TextBlock, {
+      font: "10pt sans-serif",
+      stroke: "#333",
+      textAlign: "center",
+      wrap: go.TextBlock.WrapFit,
+      width: 150
+    }, new go.Binding("text", "description"))
+  )
+);
+
+
 
       diagram.linkTemplate = $(go.Link,
-        { curve: go.Link.Bezier, corner: 5 },
-        $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
-        $(go.Shape, { toArrow: "Standard", stroke: "#555", fill: "#555" })
+        {
+          routing: go.Link.AvoidsNodes,
+          curve: go.Link.Bezier,
+          corner: 10
+        },
+        $(go.Shape, { strokeWidth: 2, stroke: "#4A90E2" }),
+        $(go.Shape, { toArrow: "Standard", stroke: "#4A90E2", fill: "#4A90E2" })
       );
 
       diagram.model = new go.GraphLinksModel(diagramData.nodes, diagramData.links);
