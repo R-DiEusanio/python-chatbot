@@ -65,11 +65,9 @@ def ask():
         "schema architetturale", "diagramma architettura"
     ]
 
-    # 🔁 Usa direttamente un SVG statico
     if any(keyword in query.lower() for keyword in diagram_keywords):
-        return jsonify({"svg_url": "/static/Pastel.svg"})  # 🔁 Nome fisso del tuo file SVG
+        return jsonify({"svg_url": "/static/template.svg"})  
 
-    # 🧠 Risposta normale da LLM
     relevant_docs = retriever.invoke(query)
     context = "\n".join(doc.page_content for doc in relevant_docs)
     response = llm.invoke(
