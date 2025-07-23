@@ -17,8 +17,8 @@ load_dotenv() #caricamento variabili ambiente dal file .env
 
 app = Flask(__name__)
 
-SVG_TEMPLATE_PATH = "template.svg" # File SVG vuoto/modello con id univoci
-SVG_OUTPUT_PATH = "/static/output.svg" # File SVG popolato che verrà scritto e servito
+SVG_TEMPLATE_PATH = "static/mappa2.svg" # File SVG vuoto/modello con id univoci
+SVG_OUTPUT_PATH = "static/output.svg" # File SVG popolato che verrà scritto e servito
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
 
@@ -40,17 +40,17 @@ wikipedia_search = WikipediaQueryRun(api_wrapper=api_wrapper)
 def popola_svg(template_path,output_path,nodeDataArray,linkDataArray):
     tree = ET.parse(template_path)
     root = tree.getroot()
-    ns = {'svg': "#link"}
-    ET.register_namespace('', '#link')
+    ns = {'svg': 'http://www.w3.org/2000/svg'}
+    ET.register_namespace('', ns['svg'])
     
     contenuti =  {node['key']: (node.get('text', ''), node.get('description', '')) for node in nodeDataArray} 
     
     for key, (text_value, desc_value) in contenuti.items():
-        text_elem = root.find(f".//svg:text[@id='{key}']", ns)
+        text_elem = root.find(f".//svg:tspan[@id='{key}']", ns)
         if text_elem is not None:
             text_elem.text = text_value
             
-        desc_elem = root.find(f".//svg:desc[@id={key}]",ns)
+        desc_elem = root.find(f".//svg:tspan[@id='{key}_desc']", ns)
         if desc_elem is not None:
             desc_elem.text = desc_value
             
@@ -174,7 +174,8 @@ def ask():
         }
 
         logging.info(f"Diagramma schema base inviato:\n{diagram_skeleton}")
-        return jsonify({"diagram": diagram_skeleton})
+        popola_svg(SVG_TEMPLATE_PATH, SVG_OUTPUT_PATH, diagram_skeleton["nodeDataArray"], diagram_skeleton["linkDataArray"])
+        return jsonify({"diagram": diagram_skeleton, "svg_url": "static/output.svg"})
 
     elif any(keyword in query.lower() for keyword in diagram_keywords):
         relevant_docs = retriever.invoke(query)
@@ -257,6 +258,9 @@ Descrizione specifica fornita dall’utente:
 
                     obj = {"nodeDataArray": nodeDataArray, "linkDataArray": links}
                     diagram_json = json.dumps(obj)
+                    popola_svg(SVG_TEMPLATE_PATH, SVG_OUTPUT_PATH, nodeDataArray, links)                    
+                    return jsonify({"diagram": diagram_json, "svg_url": "static/output.svg"})
+                    
 
                 diagram_json = json.dumps(obj)
             except json.JSONDecodeError as e:
