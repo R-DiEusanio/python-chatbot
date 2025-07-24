@@ -12,13 +12,13 @@ import logging
 import os
 import xml.etree.ElementTree as ET
 
-logging.basicConfig(level=logging.INFO)  # in console solo messaggi Error o Warning
-load_dotenv()  # caricamento variabili ambiente dal file .env
+logging.basicConfig(level=logging.INFO)
+load_dotenv()
 
 app = Flask(__name__)
 
-SVG_TEMPLATE_PATH = "static/mappa2.svg"  # File SVG vuoto/modello con id univoci
-SVG_OUTPUT_PATH = "static/output.svg"  # File SVG popolato che verrà scritto e servito
+SVG_TEMPLATE_PATH = "static/mappa2.svg"
+SVG_OUTPUT_PATH = "static/output.svg"
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
 
@@ -37,7 +37,6 @@ api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=300)
 wikipedia_search = WikipediaQueryRun(api_wrapper=api_wrapper)
 
 
-# funzione popola SVG
 def popola_svg(template_path, output_path, nodeDataArray, linkDataArray):
     tree = ET.parse(template_path)
     root = tree.getroot()
@@ -86,12 +85,9 @@ def ask():
         or "diagramma ordine layers" in query.lower()
     ):
         diagram_skeleton = {
-            "nodeDataArray": [  # le key devono corrispondere agli id nel file SVG
+            "nodeDataArray": [
                 {"key": "root", "text": ""},
-                {
-                    "key": "frontend_security",
-                    "text": "",
-                },
+                {"key": "frontend_security", "text": ""},
                 {"key": "fs1", "text": ""},
                 {"key": "fs2", "text": ""},
                 {"key": "fs3", "text": ""},
@@ -205,35 +201,32 @@ Istruzioni importanti:
 Output atteso:
 Restituisci solo un JSON valido con la struttura seguente:
 ```json
-{{"nodeDataArray": [...]}}
-"""
+{{"nodeDataArray": [...]}}"""
+
         response = llm.invoke(diagram_prompt)
         raw_content = response.content.strip()
-        
+
         match = re.search(r"\{[\s\S]*\}", raw_content)
-if match:
-    try:
-        obj = json.loads(match.group(0))
+        if match:
+            try:
+                obj = json.loads(match.group(0))
 
-        if "nodeDataArray" in obj:
-            nodeDataArray = obj["nodeDataArray"]
-            popola_svg(SVG_TEMPLATE_PATH, SVG_OUTPUT_PATH, nodeDataArray, [])
-            return jsonify({
-                "diagram": json.dumps(obj),
-                "svg_url": "static/output.svg"
-            })
+                if "nodeDataArray" in obj:
+                    nodeDataArray = obj["nodeDataArray"]
+                    popola_svg(SVG_TEMPLATE_PATH, SVG_OUTPUT_PATH, nodeDataArray, [])
+                    return jsonify({
+                        "diagram": json.dumps(obj),
+                        "svg_url": "static/output.svg"
+                    })
 
-        diagram_json = json.dumps(obj)
+                diagram_json = json.dumps(obj)
 
-    except json.JSONDecodeError as e:
-        logging.error(f"JSONDecodeError: {e}")
-        diagram_json = "{}"
+            except json.JSONDecodeError as e:
+                logging.error(f"JSONDecodeError: {e}")
+                diagram_json = "{}"
 
-logging.info(f"Diagramma JSON finale inviato:\n{diagram_json}")
-return jsonify({"diagram": diagram_json})
-
-
-
+            logging.info(f"Diagramma JSON finale inviato:\n{diagram_json}")
+            return jsonify({"diagram": diagram_json})
 
     else:
         relevant_docs = retriever.invoke(query)
