@@ -62,11 +62,11 @@ def ask():
 
     diagram_keywords = [
         "mappa concettuale", "diagramma", "diagramma a blocchi",
-        "schema architetturale", "diagramma architettura"
+        "schema architetturale", "diagramma architetturale"
     ]
 
     if any(keyword in query.lower() for keyword in diagram_keywords):
-        return jsonify({"svg_url": "/static/template.svg"})  
+        return jsonify({"svg_url": "static/template.svg"})  
 
     relevant_docs = retriever.invoke(query)
     context = "\n".join(doc.page_content for doc in relevant_docs)
