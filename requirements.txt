@@ -1,10 +1,12 @@
-langchain
-wikipedia
+flask
+python-dotenv
+langchain>=0.2
 langchain-openai
 langchain-community
 langchain-anthropic
-python-dotenv
-pydantic
+langchain-postgres
+sqlalchemy>=2
 psycopg[binary]
-pip install rag
-pip install python-pptx
+pydantic>=2
+wikipedia
+pypdf
