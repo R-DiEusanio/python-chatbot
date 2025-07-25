@@ -8,7 +8,8 @@ from sqlalchemy import create_engine
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 import re, json, logging, os
-# import xml.etree.ElementTree as ET  
+from diagram import ask_llm_for_diagram_spec, generate_svg, is_diagram_request
+from pydantic import ValidationError  
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
@@ -60,14 +61,28 @@ def ask():
     query = data.get("query", "").strip()
     print(f"Query ricevuta: {query}")
 
-    diagram_keywords = [
-        "mappa concettuale", "diagramma", "diagramma a blocchi",
-        "schema architetturale", "diagramma architetturale"
-    ]
+    # Check if this is a diagram request
+    if is_diagram_request(query):
+        try:
+            # Ask LLM for diagram specification
+            diagram_spec = ask_llm_for_diagram_spec(query, llm)
+            
+            # Generate SVG from specification
+            svg_path = generate_svg(diagram_spec)
+            
+            logging.info(f"Generated diagram: {svg_path}")
+            return jsonify({"svg_url": svg_path})
+            
+        except (ValidationError, json.JSONDecodeError, Exception) as e:
+            # Fallback to static template if generation fails
+            error_msg = f"Errore nella generazione del diagramma: {str(e)}"
+            logging.error(error_msg)
+            return jsonify({
+                "svg_url": "static/template.svg",
+                "error": "Non è stato possibile generare il diagramma dinamico. Mostrato template statico."
+            })
 
-    if any(keyword in query.lower() for keyword in diagram_keywords):
-        return jsonify({"svg_url": "static/template.svg"})  
-
+    # Original RAG flow for non-diagram queries
     relevant_docs = retriever.invoke(query)
     context = "\n".join(doc.page_content for doc in relevant_docs)
     response = llm.invoke(
